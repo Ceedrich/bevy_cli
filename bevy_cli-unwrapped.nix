@@ -4,6 +4,7 @@
   makeRustPlatform,
   pkg-config,
   openssl,
+  installShellFiles,
 }: let
   rustToolchain = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
   rustPlatform = makeRustPlatform {
@@ -18,6 +19,7 @@ in
 
     nativeBuildInputs = [
       pkg-config
+      installShellFiles
     ];
 
     buildInputs = [
@@ -25,6 +27,13 @@ in
     ];
 
     doCheck = false;
+
+    postInstall = ''
+      installShellCompletion --cmd bevy \
+        --bash <($out/bin/bevy completions bash) \
+        --fish <($out/bin/bevy completions fish) \
+        --zsh  <($out/bin/bevy completions zsh)
+    '';
 
     meta = {
       description = "Bevy Cli";

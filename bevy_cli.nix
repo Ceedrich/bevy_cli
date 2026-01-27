@@ -12,6 +12,7 @@ in
     nativeBuildInputs = [makeWrapper];
   } ''
     mkdir -p "$out/bin"
+    ln -s ${bevy_cli-unwrapped}/share "$out/share"
     makeWrapper ${lib.getExe' bevy_cli-unwrapped "bevy"} "$out/bin/bevy" \
       --prefix PATH : ${lib.makeBinPath runtimePaths} \
   ''
