@@ -1,18 +1,54 @@
 {
+  installShellFiles,
   lib,
-  bevy_cli-unwrapped,
-  runCommand,
-  makeWrapper,
-  cargo-generate,
+  makeBinaryWrapper,
+  makeRustPlatform,
+  openssl,
+  pkg-config,
+  rust-bin,
 }: let
-  runtimePaths = [cargo-generate];
+  rustToolchain = rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+  rustPlatform = makeRustPlatform {
+    cargo = rustToolchain;
+    rustc = rustToolchain;
+  };
 in
-  runCommand bevy_cli-unwrapped.name {
-    inherit (bevy_cli-unwrapped) name meta;
-    nativeBuildInputs = [makeWrapper];
-  } ''
-    mkdir -p "$out/bin"
-    ln -s ${bevy_cli-unwrapped}/share "$out/share"
-    makeWrapper ${lib.getExe' bevy_cli-unwrapped "bevy"} "$out/bin/bevy" \
-      --prefix PATH : ${lib.makeBinPath runtimePaths} \
-  ''
+  rustPlatform.buildRustPackage {
+    name = "bevy_cli";
+    src = ./.;
+    cargoLock.lockFile = ./Cargo.lock;
+    cargoBuildFlags = ["--all"];
+
+    nativeBuildInputs = [
+      pkg-config
+      installShellFiles
+      makeBinaryWrapper
+    ];
+
+    buildInputs = [
+      openssl
+    ];
+
+    doCheck = false;
+
+    postInstall = ''
+      installShellCompletion --cmd bevy \
+        --bash <($out/bin/bevy completions bash) \
+        --fish <($out/bin/bevy completions fish) \
+        --zsh  <($out/bin/bevy completions zsh)
+
+      for bin in $out/bin/bevy{,_lint}; do
+        wrapProgram "$bin" \
+          --set BEVY_LINT_SYSROOT ${rustToolchain}
+      done
+    '';
+
+    meta = {
+      description = "Bevy Cli";
+      homepage = "https://github.com/TheBevyFlock/bevy_cli";
+      license = lib.licenses.mit;
+      maintainers = [];
+
+      mainProgram = "bevy";
+    };
+  }
