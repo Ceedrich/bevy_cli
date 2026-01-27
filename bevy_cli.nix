@@ -8,7 +8,7 @@
   runtimePaths = [cargo-generate];
 in
   runCommand bevy_cli-unwrapped.name {
-    inherit (bevy_cli-unwrapped) name;
+    inherit (bevy_cli-unwrapped) name meta;
     nativeBuildInputs = [makeWrapper];
   } ''
     mkdir -p "$out/bin"

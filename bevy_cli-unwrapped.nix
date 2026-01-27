@@ -1,4 +1,5 @@
 {
+  lib,
   rust-bin,
   makeRustPlatform,
   pkg-config,
@@ -24,4 +25,13 @@ in
     ];
 
     doCheck = false;
+
+    meta = {
+      description = "Bevy Cli";
+      homepage = "https://github.com/TheBevyFlock/bevy_cli";
+      license = lib.licenses.mit;
+      maintainers = [];
+
+      mainProgram = "bevy";
+    };
   }
