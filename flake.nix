@@ -18,8 +18,9 @@
       overlays = [(import rust-overlay)];
     };
   in {
-    packages.${system} = {
-      bevy_cli = pkgs.callPackage ./bevy_cli.nix {};
+    packages.${system} = rec {
+      bevy_cli = pkgs.callPackage ./bevy_cli.nix {inherit bevy_cli-unwrapped;};
+      bevy_cli-unwrapped = pkgs.callPackage ./bevy_cli-unwrapped.nix {};
       default = self.packages.${system}.bevy_cli;
     };
   };
